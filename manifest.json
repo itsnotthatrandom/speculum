@@ -1,22 +1,40 @@
 {
   "manifest_version": 3,
   "name": "Speculum",
-  "version": "1.1",
-  "description": "Mirror the outgoing webcam stream in Google Meet.",
-  "permissions": ["storage"],
-  "background": { "service_worker": "background.js" },
-  "action": { "default_title": "Toggle Speculum mirroring" },
+  "version": "1.2",
+  "description": "Mirror the outgoing webcam stream in Google Meet and Slack huddles.",
+  "permissions": [
+    "storage"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Toggle Speculum mirroring"
+  },
   "content_scripts": [
     {
-      "matches": ["https://meet.google.com/*"],
-      "js": ["mirror.js"],
+      "matches": [
+        "https://meet.google.com/*",
+        "https://app.slack.com/*"
+      ],
+      "js": [
+        "mirror.js"
+      ],
       "run_at": "document_start",
-      "world": "MAIN"
+      "world": "MAIN",
+      "all_frames": true
     },
     {
-      "matches": ["https://meet.google.com/*"],
-      "js": ["bridge.js"],
-      "run_at": "document_start"
+      "matches": [
+        "https://meet.google.com/*",
+        "https://app.slack.com/*"
+      ],
+      "js": [
+        "bridge.js"
+      ],
+      "run_at": "document_start",
+      "all_frames": true
     }
   ]
 }
