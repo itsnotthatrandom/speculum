@@ -1,12 +1,11 @@
 (() => {
   let enabled = true;
-  window.addEventListener('speculum:state', (e) => { enabled = !!e.detail; });
-  window.dispatchEvent(new CustomEvent('speculum:request'));
+  window.addEventListener('speculum:state', (e) => { enabled = e.detail; });
 
   const patch = (win) => {
     const md = win.navigator.mediaDevices;
-    if (!md || md.__speculum) return; // already patched; a second flip would undo the first
-    Object.defineProperty(md, '__speculum', { value: true });
+    if (!md || md.__speculum) return; // a second patch would flip the image back
+    md.__speculum = true;
 
     const orig = md.getUserMedia.bind(md);
     md.getUserMedia = async (constraints) => {
@@ -22,20 +21,18 @@
 
       processor.readable.pipeThrough(new win.TransformStream({
         transform(frame, ctrl) {
-          if (!enabled) { ctrl.enqueue(frame); return; } // pass through untouched
-          const w = frame.displayWidth, h = frame.displayHeight;
-          if (canvas.width !== w) canvas.width = w;
-          if (canvas.height !== h) canvas.height = h;
-          ctx.setTransform(-1, 0, 0, 1, w, 0); // horizontal flip
-          ctx.drawImage(frame, 0, 0, w, h);
-          const out = new win.VideoFrame(canvas, { timestamp: frame.timestamp });
+          if (!enabled) return ctrl.enqueue(frame);
+          canvas.width = frame.displayWidth;
+          canvas.height = frame.displayHeight;
+          ctx.setTransform(-1, 0, 0, 1, canvas.width, 0); // horizontal flip
+          ctx.drawImage(frame, 0, 0);
+          ctrl.enqueue(new win.VideoFrame(canvas, { timestamp: frame.timestamp }));
           frame.close();
-          ctrl.enqueue(out);
         }
       })).pipeTo(generator.writable).catch(() => {});
 
       const stop = generator.stop.bind(generator);
-      generator.stop = () => { stop(); track.stop(); }; // release real webcam
+      generator.stop = () => { stop(); track.stop(); }; // release the real webcam
       stream.removeTrack(track);
       stream.addTrack(generator);
       return stream;

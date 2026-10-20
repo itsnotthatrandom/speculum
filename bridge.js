@@ -1,9 +1,10 @@
-// Isolated world: relays the stored toggle into the page (MAIN world) via DOM events.
-const send = (on) => window.dispatchEvent(new CustomEvent('speculum:state', { detail: on }));
-const sendStored = () => chrome.storage.local.get({ enabled: true }, ({ enabled }) => send(enabled));
+// Isolated world: the page (MAIN world) can't read chrome.storage, so relay the toggle via DOM events.
+chrome.storage.local.get({ enabled: true }, ({ enabled }) => {
+  window.dispatchEvent(new CustomEvent('speculum:state', { detail: enabled }));
+});
 
-sendStored();
-window.addEventListener('speculum:request', sendStored);
-chrome.storage.onChanged.addListener((changes, area) => {
-  if (area === 'local' && changes.enabled) send(changes.enabled.newValue);
+chrome.storage.onChanged.addListener((changes) => {
+  if (changes.enabled) {
+    window.dispatchEvent(new CustomEvent('speculum:state', { detail: changes.enabled.newValue }));
+  }
 });
