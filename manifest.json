@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Speculum",
-  "version": "1.2",
+  "version": "1.3",
   "description": "Mirror the outgoing webcam stream in Google Meet and Slack huddles.",
   "permissions": [
     "storage"
@@ -23,7 +23,8 @@
       ],
       "run_at": "document_start",
       "world": "MAIN",
-      "all_frames": true
+      "all_frames": true,
+      "match_origin_as_fallback": true
     },
     {
       "matches": [
@@ -34,7 +35,8 @@
         "bridge.js"
       ],
       "run_at": "document_start",
-      "all_frames": true
+      "all_frames": true,
+      "match_origin_as_fallback": true
     }
   ]
 }

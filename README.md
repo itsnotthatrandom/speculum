@@ -6,6 +6,8 @@ A small Chrome extension that mirrors your outgoing webcam video in Google Meet 
 
 Speculum wraps `navigator.mediaDevices.getUserMedia` on `meet.google.com` and `app.slack.com`. When the call page asks for the camera, the extension routes the video track through `MediaStreamTrackProcessor` and `MediaStreamTrackGenerator`, flips each frame on an `OffscreenCanvas`, and hands the page the flipped track instead of the original. When mirroring is off, frames pass through unchanged.
 
+Slack opens huddles in a separate `about:blank` popup window. Speculum covers this two ways: the content scripts use `match_origin_as_fallback` so Chrome injects them into `about:blank` windows and frames opened by Slack, and `mirror.js` also hooks `window.open` on the Slack page to patch the popup's `getUserMedia` the moment it is created. A guard ensures each window is patched only once.
+
 ## Requirements
 
 - A Chromium-based browser (Chrome, Edge, Arc, Brave, and so on). It does not work in Safari or Firefox, because they lack `MediaStreamTrackProcessor` and `MediaStreamTrackGenerator`.
